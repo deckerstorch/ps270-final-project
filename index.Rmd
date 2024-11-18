@@ -15,9 +15,9 @@ sports, language, historical shifts in people and ideas, partisanship etc.
 
 ## Proposal Paragraph
 
-What is the relationship between the general composition of Congress members and their party affiliation over time? I hypothesize that members of younger generations would make up a more significant portion of the democratic portion of Congress, while the older members would make up more of the Republican portion. This is due to the generational theory that younger people are often associated with more progressive ideals due to differences in social and political values. Therefore, during Congresses with lower average ages among members, I expect a strong Democratic percentage and in Congresses with older average ages, I expect a more Republican dominant Congress. My explanatory variable of interest is the generation to which each congress member belongs based on their year of birth. This is measured by assigned names to generations defined by year ranges, such as the progressive generation, millennials, the lost generation, etc. My outcome variable of interest is the party affiliation of any given senator, which is measured by a code that assigns a value to party affiliation. For example, in the dataset democrats are assigned the party_code = 100, republicans = 200, and independents = 328. For my hypothesis to be supported, I would have to see a higher proportion of the youngest generations in the data, specifically millennials and Gen Z, to be associated with the democratic party compared to the older generations in the dataset. Similarly, we would like to see an observable difference in party affiliation between younger and older generations in Congress. My hypothesis would be disproved if party affiliation is relatively evenly distributed across generations within Congress or if the younger generations turn out to have a stronger affiliation with the Republican party compared to the older generations, or vice versa.
+What is the relationship between the general composition of Congress members and their party affiliation over time? I hypothesize that members of younger generations would make up a more significant portion of the Democratic portion of Congress, while the older members would make up more of the Republican portion. This is due to the generational theory that younger people are often associated with more progressive ideals due to differences in social and political values. Therefore, during Congresses with lower average ages among members, I expect a strong democratic percentage and in Congresses with older average ages, I expect a more conservative dominant Congress, accounting for older generation's differences in party ID due to the party swap in the mid-late 1900s. My explanatory variable of interest is the generation to which each congress member belongs based on their year of birth. This is measured by assigned names to generations defined by year ranges, such as the progressive generation, millennials, the lost generation, etc. My outcome variable of interest is the party affiliation of any given senator, which is measured by a code that assigns a value to party affiliation. For example, in the dataset democrats are assigned the party_code = 100, republicans = 200, and independents = 328. For my hypothesis to be supported, I would have to see a higher proportion of the youngest generations in the data, specifically millennials and Gen Z, to be associated with the democratic party compared to the older generations in the dataset. Similarly, I would like to see an observable difference in party affiliation between younger and older generations in Congress. My hypothesis would be disproved if party affiliation is relatively evenly distributed across generations within Congress or if the younger generations turn out to have a stronger affiliation with the Republican party compared to the older generations, or vice versa.
 
-## Data Visualization
+## Data Visualization and Analysis
 
 ```{r, include = FALSE}
 library(tidyverse)
@@ -27,13 +27,15 @@ congress_demographics <- read_csv("congress-demographics/data_aging_congress.csv
 head(congress_demographics)
 ```
 
-```{r, fig.width = 10, fig.height = 7}
+```{r, fig.width = 12, fig.height = 7}
 congress_counts <- congress_demographics |>
-  mutate(party = case_when(
-    party_code == 100 ~ "Democrat",
-    party_code == 200 ~ "Republican",
-    party_code == 328 ~ "Independent",
-    party_code %in% c(537, 523, 522, 402, 380, 370, 356, 347, 331, 329, 112) ~ "Other"))
+  mutate(party = case_when(party_code == 100 ~ "Democrat",
+                           party_code == 200 ~ "Republican",
+                           party_code == 328 ~ "Independent",
+                           party_code %in% c(537, 523, 522, 402, 380, 370, 356, 347, 331, 329, 112) ~ "Other"))
+
+congress_counts <- congress_counts |>
+  mutate(party = factor(party, levels= c("Democrat", "Republican", "Independent", "Other")))
 
 congress_counts <- congress_counts |>
   count(generation, party) |>
@@ -41,17 +43,46 @@ congress_counts <- congress_counts |>
 
 congress_counts <- congress_counts |>
   mutate(generation = factor(generation, levels = c(
-    "Gilded", "Progressive", "Missionary", "Lost", 
-    "Greatest", "Silent", "Boomers", "Gen X", 
-    "Millennial", "Gen Z")))
+    "Gilded", "Progressive", "Missionary", "Lost", "Greatest", "Silent", "Boomers", "Gen X", "Millennial", "Gen Z")))
 
 congress_counts |>
   ggplot(mapping = aes(x = generation, y = count, fill = party)) +
-  geom_bar(stat = "identity", position = "stack") +
+  geom_bar(stat = "identity", position = "dodge") +
   scale_fill_manual(values = c("Democrat" = "blue", "Republican" = "red", "Independent" = "purple1", "Other" = "grey")) +
   labs(x = "Generation of Congress Member",
-       y = "Proportion of Members",
+       y = "Proportion of Members by Party",
        fill = "Party Affiliation",
-       title = "Party Affiliation Across Generations in Congress")
+       title = "Party Affiliation Across Generations in Congress",
+       caption = "Source: Congress Demographics Dataset for FiveThirtyEight") +
+  theme_minimal()
 ```
-This is the projection of all the collected data. In the future it may be worth it to focus my data presentation on certain years to present a more fulfilling and well-crafted argument.
+
+```{r, fig.width = 12, fig.height = 7}
+generation_percentages <- congress_demographics |>
+  group_by(congress, generation) |>
+  summarise(count = n(), .groups = "drop") |>
+  group_by(congress) |>
+  mutate(percentage = (count / sum(count)) * 100)
+
+
+generation_percentages |>
+  ggplot(mapping = aes(x = congress, y = percentage, color = generation)) +
+  geom_line(size = 1) +
+  geom_point() +
+  scale_color_manual(values = c("Gilded" = "orange", "Progressive" = "cyan",
+                                "Missionary" = "green", "Lost" = "blue",
+                                "Greatest" = "navy", "Silent" = "purple",
+                                "Boomers" = "pink", "Gen X" = "forestgreen",
+                                "Millennial" = "red", "Gen Z" = "yellow3")) +
+  labs(x = "Congress Number",
+       y = "Percentage of Members",
+       color = "Generation",
+       title = "Generational Composition of Congress Over Time: 66th to 118th",
+       caption = "Source: Congress Demographics Dataset for FiveThirtyEight") +
+  theme_minimal()
+```
+
+For the sake of clarity, while taking into account the shift in party ideology and structure that occurred in the mid-late 1900s, we will address political ideology through in more literal terms of liberalism and conservatism. Upon observation of the graphs, an obvious issue with my hypothesis is that due to general trend of higher average ages of congress members, there are not many younger representatives in the data for us to analyze trends and potentially understand the patterns of liberal, or conservative, ideology among younger representatives. 
+
+However, upon looking at the proportion of party members and then comparing that to the percentage of by members by generation within each recorded congress, we can see that my hypothesis was incorrect. The trends may may actually show the opposite, where we are seeing more conservative ideals among the younger generations elected to congress. The dominance of the liberal Democratic Party within the Greatest Generation that dominated congress from the 80th to 100th congresses along with liberal trends in the Missionary, Lost, and Silent Generations show that the new liberalism adopted by the Democratic party from the New Deal and ensuing Civil Rights Movement was dominant among the older generations. Then, among Boomers and Gen X, there is a surge of conservatism from the Republican Party through the congresses of the late 1900s into the 2000s. Then we come back to the small amounts of data available to us from Millennials and Gen Z where it seems there is a balance between conservatism and liberalism among Millennials, and simply not enough data to determine a trend among Gen Z representatives. Overall, these graphs show a conflicting argument to my hypothesis, and it will be interesting to dive into these ideological trends more.
+
