@@ -105,3 +105,10 @@ Therefore, after creating a general linear regression model of the large quantit
 
 In conclusion, upon looking at the proportion of party members and then comparing that to the percentage of by members by generation within each recorded congress, we can see that the results of this analysis provide very limited support for my hypothesis. While the regression showed a small negative coefficient, indicating a very slight association between older age and democratic affiliation, the p-value of 0.46 suggests that the relationship is far from statistically significant. I believe this lack of significance stems from certain limitations of the dataset stemming from small sample sizes of the youngest eligible generations of Millenials and Gen X along with other confounding variables such as historical events, generational shifts, and other aspects that would affect party affiliation beyond simply the age of the representative. So, if I had more time and money, I would focus my regressions to control and focus confounding variables, such as running multiple regressions for certain time periods or regions of the United States.
 
+Citation:
+
+"Congress Demographics"
+Author: Holly Fuong for FiveThirtyEight
+4/3/23
+https://github.com/fivethirtyeight/data
+
